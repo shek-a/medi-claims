@@ -29,10 +29,11 @@ export default function Navigation() {
 
           {/* Navigation Links - Only show when signed in */}
           {isSignedIn && (
-            <div className="hidden md:block">
+            <div className="hidden md:block" data-testid="desktop-nav">
               <div className="ml-10 flex items-baseline space-x-4">
                 <Link
                   href="/"
+                  data-testid="desktop-home-link"
                   className={`flex items-center px-3 py-2 rounded-md text-sm font-medium border border-transparent transition-all duration-200 transform hover:scale-105 hover:shadow-md ${
                     pathname === '/' 
                       ? 'text-white bg-blue-600 border-blue-600' 
@@ -44,6 +45,7 @@ export default function Navigation() {
                 </Link>
                 <Link
                   href="/dashboard"
+                  data-testid="desktop-dashboard-link"
                   className={`flex items-center px-3 py-2 rounded-md text-sm font-medium border border-transparent transition-all duration-200 transform hover:scale-105 hover:shadow-md ${
                     pathname === '/dashboard' 
                       ? 'text-white bg-blue-600 border-blue-600' 
@@ -87,10 +89,11 @@ export default function Navigation() {
 
         {/* Mobile menu - Only show navigation when signed in */}
         {isSignedIn && (
-          <div className="md:hidden">
+          <div className="md:hidden" data-testid="mobile-nav">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
               <Link
                 href="/"
+                data-testid="mobile-home-link"
                 className={`flex items-center px-3 py-2 rounded-md text-base font-medium border border-transparent transition-all duration-200 transform hover:scale-105 hover:shadow-md ${
                   pathname === '/' 
                     ? 'text-white bg-blue-600 border-blue-600' 
@@ -102,6 +105,7 @@ export default function Navigation() {
               </Link>
               <Link
                 href="/dashboard"
+                data-testid="mobile-dashboard-link"
                 className={`flex items-center px-3 py-2 rounded-md text-base font-medium border border-transparent transition-all duration-200 transform hover:scale-105 hover:shadow-md ${
                   pathname === '/dashboard' 
                     ? 'text-white bg-blue-600 border-blue-600' 
