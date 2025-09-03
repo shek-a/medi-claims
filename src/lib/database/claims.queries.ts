@@ -1,10 +1,24 @@
 import type { ClaimsFilters, SortOption } from '@/types/claims';
 
-export function buildMatchStage(filters: ClaimsFilters, globalSearch: string) {
-  const match: any = {};
+interface MatchStage {
+  [key: string]: unknown;
+}
+
+interface CostRange {
+  $gte?: number;
+  $lte?: number;
+}
+
+interface DateRange {
+  $gte?: Date;
+  $lte?: Date;
+}
+
+export function buildMatchStage(filters: ClaimsFilters, globalSearch: string): MatchStage {
+  const match: MatchStage = {};
 
   if (filters.claim !== undefined) match.claim = filters.claim;
-  if (filters.member_no !== undefined) match.member_no = filters.member_no;
+  if (filters.member_no !== undefined) match.member_number = filters.member_no;
   if (filters.episode_id !== undefined) match.episode_id = filters.episode_id;
 
   if (filters.hospital) {
@@ -14,7 +28,7 @@ export function buildMatchStage(filters: ClaimsFilters, globalSearch: string) {
   }
 
   if (filters.status) {
-    match.status = Array.isArray(filters.status)
+    match.claim_status = Array.isArray(filters.status)
       ? { $in: filters.status }
       : filters.status;
   }
@@ -36,17 +50,19 @@ export function buildMatchStage(filters: ClaimsFilters, globalSearch: string) {
   }
 
   if (filters.cost_from !== undefined || filters.cost_to !== undefined) {
-    match.cost = {} as any;
-    if (filters.cost_from !== undefined) match.cost.$gte = filters.cost_from;
-    if (filters.cost_to !== undefined) match.cost.$lte = filters.cost_to;
+    const costRange: CostRange = {};
+    if (filters.cost_from !== undefined) costRange.$gte = filters.cost_from;
+    if (filters.cost_to !== undefined) costRange.$lte = filters.cost_to;
+    match.cost = costRange;
   }
 
   if (filters.service_date_from || filters.service_date_to) {
-    match.service_date = {} as any;
+    const dateRange: DateRange = {};
     if (filters.service_date_from)
-      match.service_date.$gte = new Date(filters.service_date_from as any);
+      dateRange.$gte = new Date(filters.service_date_from);
     if (filters.service_date_to)
-      match.service_date.$lte = new Date(filters.service_date_to as any);
+      dateRange.$lte = new Date(filters.service_date_to);
+    match.service_date = dateRange;
   }
 
   if (globalSearch && globalSearch.trim().length > 0) {
@@ -76,7 +92,7 @@ export function buildPipeline(
   limit: number,
   globalSearch: string,
 ) {
-  const pipeline: any[] = [];
+  const pipeline: object[] = [];
   const match = buildMatchStage(filters, globalSearch);
   if (Object.keys(match).length > 0) pipeline.push({ $match: match });
   pipeline.push(buildSortStage(sort));

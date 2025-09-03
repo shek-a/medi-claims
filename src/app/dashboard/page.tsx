@@ -1,27 +1,18 @@
 import { Suspense } from 'react'
 import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
-import ClaimsDataGrid from '@/components/claims/DataGrid/ClaimsDataGrid'
-import { loadClaimsData, loadFilterOptions } from './loaders'
-import { searchClaims } from './actions'
-import type { MedicalClaim, ClaimsFilters, SortOption } from '@/types/claims'
+import { ClaimsFilters, SortOption, MedicalClaim } from '@/types/claims'
+import { listClaims } from '@/lib/database/claims.repo'
+import MedicalClaimsGridWrapper from '@/components/MedicalClaimsGridWrapper'
 
 interface DashboardPageProps {
   searchParams: Promise<{
     page?: string
     limit?: string
     search?: string
-    hospital?: string
-    status?: string
-    claim_type?: string
-    contract_type?: string
-    provider?: string
-    member_no?: string
-    episode_id?: string
-    cost_from?: string
-    cost_to?: string
-    service_date_from?: string
-    service_date_to?: string
+    sort_field?: string
+    sort_order?: string
+    [key: string]: string | undefined
   }>
 }
 
@@ -29,85 +20,99 @@ async function ClaimsDataGridWrapper({ searchParams }: DashboardPageProps) {
   // Await searchParams since it's now a Promise in Next.js 15
   const params = await searchParams
   
-  // Load initial data
-  const initialData = await loadClaimsData(params)
-  const filterOptions = await loadFilterOptions()
-
-  // Define grid columns
-  const columns = [
-    { key: 'claim', header: 'Claim #' },
-    { key: 'patient', header: 'Patient' },
-    { key: 'status', header: 'Status' },
-    { key: 'episode_id', header: 'Episode ID' },
-    { key: 'member_no', header: 'Member #' },
-    { key: 'hospital', header: 'Hospital' },
-    { key: 'provider', header: 'Provider' },
-    { key: 'service_date', header: 'Service Date' },
-    { key: 'cost', header: 'Cost' },
-    { key: 'benefit', header: 'Benefit' },
-  ]
-
-  // Handle grid interactions
-  const handlePageChange = async (newPage: number) => {
-    'use server'
-    // This would typically update the URL and reload data
-    // For now, we'll just log the change
-    console.log('Page changed to:', newPage)
+  // Parse search parameters
+  const page = parseInt(params.page || '1')
+  const limit = Math.min(parseInt(params.limit || '50'), 200) // Max 200 records
+  const globalSearch = params.search || ''
+  
+  // Parse sort parameters
+  let sort: SortOption | undefined
+  if (params.sort_field && params.sort_order) {
+    sort = {
+      field: params.sort_field as keyof MedicalClaim,
+      order: params.sort_order as 'asc' | 'desc'
+    }
   }
 
-  const handlePageSizeChange = async (newPageSize: number) => {
-    'use server'
-    // This would typically update the URL and reload data
-    console.log('Page size changed to:', newPageSize)
-  }
+  // Parse filters
+  const filters: ClaimsFilters = {}
+  if (params.claim) filters.claim = parseInt(params.claim)
+  if (params.member_no) filters.member_no = parseInt(params.member_no)
+  if (params.episode_id) filters.episode_id = parseInt(params.episode_id)
+  if (params.hospital) filters.hospital = params.hospital
+  if (params.provider) filters.provider = params.provider
+  if (params.status) filters.status = params.status as import('@/types/claims').ClaimStatus
+  if (params.claim_type) filters.claim_type = params.claim_type
+  if (params.contract_type) filters.contract_type = params.contract_type
+  if (params.cost_from) filters.cost_from = parseFloat(params.cost_from)
+  if (params.cost_to) filters.cost_to = parseFloat(params.cost_to)
+  if (params.service_date_from) filters.service_date_from = params.service_date_from
+  if (params.service_date_to) filters.service_date_to = params.service_date_to
 
-  const handleSearchChange = async (searchTerm: string) => {
-    'use server'
-    // This would typically update the URL and reload data
-    console.log('Search changed to:', searchTerm)
-  }
+  try {
+    // Fetch data from MongoDB
+    const result = await listClaims(
+      { page, limit },
+      filters,
+      sort,
+      globalSearch
+    )
 
-  const handleFilterChange = async (filters: ClaimsFilters) => {
-    'use server'
-    // This would typically update the URL and reload data
-    console.log('Filters changed to:', filters)
-  }
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-blue-900">
+              Dashboard
+            </h1>
+            <p className="text-lg text-blue-700 mt-2">
+              Medical Claims Management
+            </p>
+          </div>
 
-  const handleSortChange = async (field: string, order: 'asc' | 'desc') => {
-    'use server'
-    // This would typically update the URL and reload data
-    console.log('Sort changed to:', field, order)
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-blue-900">
-            Dashboard
-          </h1>
-          <p className="text-lg text-blue-700 mt-2">
-            Medical Claims Management
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <ClaimsDataGrid
-            columns={columns}
-            rows={initialData.data}
-            totalCount={initialData.totalCount}
-            page={initialData.page}
-            pageSize={initialData.limit}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            onSearchChange={handleSearchChange}
-            onFilterChange={handleFilterChange}
-            onSortChange={handleSortChange}
+          <MedicalClaimsGridWrapper 
+            initialData={result.data}
+            totalCount={result.totalCount}
+            currentPage={result.page}
+            pageSize={result.limit}
+            totalPages={result.totalPages}
           />
         </div>
       </div>
-    </div>
-  )
+    )
+  } catch (error) {
+    console.error('Error loading claims:', error)
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-blue-900">
+              Dashboard
+            </h1>
+            <p className="text-lg text-blue-700 mt-2">
+              Medical Claims Management
+            </p>
+          </div>
+          
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Error Loading Claims</h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <p>Failed to load medical claims. Please try again later.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 }
 
 export default async function DashboardPage(props: DashboardPageProps) {

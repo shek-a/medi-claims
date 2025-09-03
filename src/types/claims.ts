@@ -5,18 +5,18 @@ export type ClaimStatus = "Assessed" | "Paid" | "Verified" | "Received" | "Cance
 export interface MedicalClaim {
   _id?: string;
   claim_type: string;
-  status: ClaimStatus;
+  claim_status: ClaimStatus;
   episode_id: number;
   claim: number;
-  member_no: number;
+  member_number: number;
   patient: string;
   sex: "M" | "F" | "O";
   hospital: string;
   provider: string;
   agreement: string;
   service_date: string | Date;
-  admit_date?: string | Date;
-  disch_date?: string | Date;
+  admission_date?: string | Date;
+  discharge_date?: string | Date;
   service: string;
   diagnosis: string;
   cost: number;

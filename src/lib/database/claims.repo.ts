@@ -30,7 +30,7 @@ export async function distinctOptions() {
   const [hospitals, providers, statuses] = await Promise.all([
     db.collection(COLLECTION).distinct('hospital'),
     db.collection(COLLECTION).distinct('provider'),
-    db.collection(COLLECTION).distinct('status'),
+    db.collection(COLLECTION).distinct('claim_status'),
   ]);
   return { hospitals, providers, statuses };
 }

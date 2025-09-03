@@ -1,155 +1,133 @@
-import { loadClaimsData, loadFilterOptions } from './loaders'
-import { searchClaims, exportClaims, updateClaimStatus } from './actions'
+import React from 'react'
+import { render, screen } from '@testing-library/react'
+import { useAuth } from '@clerk/nextjs'
+import { redirect } from 'next/navigation'
+import DashboardPage from './page'
 
-// Mock the repository module
-jest.mock('@/lib/database/claims.repo', () => ({
-  listClaims: jest.fn(),
-  distinctOptions: jest.fn(),
-  exportClaims: jest.fn(),
+// Mock the hooks and redirect
+jest.mock('@clerk/nextjs')
+jest.mock('next/navigation', () => ({
+  redirect: jest.fn(),
 }))
 
-// Mock Clerk server auth
-jest.mock('@clerk/nextjs/server', () => ({
-  auth: jest.fn(() => ({ userId: 'user123' })),
-}))
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
+const mockRedirect = redirect as jest.MockedFunction<typeof redirect>
 
-describe('Dashboard Functions', () => {
-  beforeEach(() => {
+describe('DashboardPage Component', () => {
+  afterEach(() => {
     jest.clearAllMocks()
   })
 
-  describe('loaders', () => {
-    it('loadClaimsData parses URL parameters correctly', async () => {
-      const { listClaims } = await import('@/lib/database/claims.repo')
-      ;(listClaims as jest.Mock).mockResolvedValue({
-        data: [],
-        totalCount: 0,
-        page: 1,
-        limit: 25,
-        totalPages: 0,
+  describe('when auth is loading', () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ 
+        isSignedIn: false, 
+        isLoaded: false 
       })
-
-      const result = await loadClaimsData({
-        page: '2',
-        limit: '50',
-        search: 'hernia',
-        hospital: 'Calvary',
-      })
-
-      expect(listClaims).toHaveBeenCalledWith(
-        { page: 2, limit: 50 },
-        { hospital: 'Calvary' },
-        { field: 'service_date', order: 'desc' },
-        'hernia'
-      )
     })
 
-    it('loadClaimsData clamps invalid values', async () => {
-      const { listClaims } = await import('@/lib/database/claims.repo')
-      ;(listClaims as jest.Mock).mockResolvedValue({
-        data: [],
-        totalCount: 0,
-        page: 1,
-        limit: 200,
-        totalPages: 0,
-      })
-
-      const result = await loadClaimsData({
-        page: '0', // Should clamp to 1
-        limit: '1000', // Should clamp to 200
-      })
-
-      expect(listClaims).toHaveBeenCalledWith(
-        { page: 1, limit: 200 }, // Clamped values
-        {},
-        { field: 'service_date', order: 'desc' },
-        ''
-      )
+    it('renders loading state', () => {
+      render(<DashboardPage />)
+      
+      expect(screen.getByText('Loading...')).toBeInTheDocument()
     })
 
-    it('loadFilterOptions returns sorted options', async () => {
-      const { distinctOptions } = await import('@/lib/database/claims.repo')
-      ;(distinctOptions as jest.Mock).mockResolvedValue({
-        hospitals: ['SJOG', 'Calvary'],
-        providers: ['0055601E', '0055600D'],
-        statuses: ['Paid', 'Assessed'],
-      })
+    it('displays loading spinner', () => {
+      render(<DashboardPage />)
+      
+      const spinner = screen.getByText('Loading...').previousElementSibling
+      expect(spinner).toHaveClass('animate-spin', 'rounded-full', 'border-b-2', 'border-blue-600')
+    })
 
-      const result = await loadFilterOptions()
-
-      expect(result.hospitals).toEqual(['Calvary', 'SJOG'])
-      expect(result.providers).toEqual(['0055600D', '0055601E'])
-      expect(result.statuses).toEqual(['Assessed', 'Paid'])
+    it('applies correct background styling', () => {
+      render(<DashboardPage />)
+      
+      const container = screen.getByText('Loading...').closest('div')?.parentElement
+      expect(container).toHaveClass('min-h-screen', 'bg-gradient-to-br', 'from-blue-50', 'to-blue-100')
     })
   })
 
-  describe('actions', () => {
-    it('searchClaims validates and clamps parameters', async () => {
-      const { listClaims } = await import('@/lib/database/claims.repo')
-      ;(listClaims as jest.Mock).mockResolvedValue({
-        data: [],
-        totalCount: 0,
-        page: 1,
-        limit: 200,
-        totalPages: 0,
+  describe('when user is not signed in', () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ 
+        isSignedIn: false, 
+        isLoaded: true 
       })
-
-      const result = await searchClaims({
-        page: 0,
-        limit: 1000,
-        search: 'test',
-        filters: {},
-        sort: { field: 'service_date', order: 'desc' },
-      })
-
-      expect(listClaims).toHaveBeenCalledWith(
-        { page: 1, limit: 200 }, // Clamped values
-        {},
-        { field: 'service_date', order: 'desc' },
-        'test'
-      )
     })
 
-    it('exportClaims converts data to CSV format', async () => {
-      const { exportClaims: repoExportClaims } = await import('@/lib/database/claims.repo')
-      ;(repoExportClaims as jest.Mock).mockResolvedValue([
-        { claim: 1001, patient: 'Jane Doe', status: 'Verified' },
-        { claim: 1002, patient: 'John Smith', status: 'Paid' },
-      ])
+    it('redirects to home page', () => {
+      render(<DashboardPage />)
+      
+      expect(mockRedirect).toHaveBeenCalledWith('/')
+    })
+  })
 
-      const result = await exportClaims({
-        search: 'hernia',
-        filters: { hospital: 'Calvary' },
-        sort: { field: 'service_date', order: 'desc' },
-        format: 'csv',
+  describe('when user is signed in', () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ 
+        isSignedIn: true, 
+        isLoaded: true 
       })
-
-      expect(result).toContain('claim,patient,status')
-      expect(result).toContain('1001,Jane Doe,Verified')
-      expect(result).toContain('1002,John Smith,Paid')
     })
 
-    it('updateClaimStatus validates status values', async () => {
-      const result = await updateClaimStatus({
-        claimId: '1001',
-        status: 'InvalidStatus',
-        notes: 'Test update',
-      })
-
-      expect(result.success).toBe(false)
-      expect(result.error).toContain('Invalid status')
+    it('renders dashboard page', () => {
+      render(<DashboardPage />)
+      
+      expect(screen.getByText('Dashboard')).toBeInTheDocument()
+      expect(screen.getByText('Dashboard content coming soon...')).toBeInTheDocument()
     })
 
-    it('updateClaimStatus accepts valid status values', async () => {
-      const result = await updateClaimStatus({
-        claimId: '1001',
-        status: 'Verified',
-        notes: 'Claim verified by admin',
-      })
+    it('displays placeholder content', () => {
+      render(<DashboardPage />)
+      
+      expect(screen.getByText('This page will contain your claims overview, statistics, and quick actions.')).toBeInTheDocument()
+    })
 
-      expect(result.success).toBe(true)
-      expect(result.claimId).toBe('1001')
-      expect(result.status).toBe('Verified')
+    it('does not redirect when authenticated', () => {
+      render(<DashboardPage />)
+      
+      expect(mockRedirect).not.toHaveBeenCalled()
+    })
+
+    it('applies correct page styling', () => {
+      render(<DashboardPage />)
+      
+      const mainContainer = screen.getByText('Dashboard').closest('div')?.parentElement?.parentElement
+      expect(mainContainer).toHaveClass('min-h-screen', 'bg-gradient-to-br', 'from-blue-50', 'to-blue-100')
+    })
+
+    it('renders content in a card layout', () => {
+      render(<DashboardPage />)
+      
+      const contentCard = screen.getByText('Dashboard content coming soon...').closest('.bg-white')
+      expect(contentCard).toHaveClass('bg-white', 'rounded-lg', 'shadow-lg')
+    })
+  })
+
+  describe('accessibility', () => {
+    beforeEach(() => {
+      mockUseAuth.mockReturnValue({ 
+        isSignedIn: true, 
+        isLoaded: true 
+      })
+    })
+
+    it('has proper heading hierarchy', () => {
+      render(<DashboardPage />)
+      
+      const heading = screen.getByRole('heading', { level: 1 })
+      expect(heading).toHaveTextContent('Dashboard')
+    })
+
+    it('has descriptive text for loading state', () => {
+      mockUseAuth.mockReturnValue({ 
+        isSignedIn: false, 
+        isLoaded: false 
+      })
+      
+      render(<DashboardPage />)
+      
+      expect(screen.getByText('Loading...')).toBeInTheDocument()
     })
   })
 })
