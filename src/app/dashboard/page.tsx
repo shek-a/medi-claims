@@ -65,9 +65,9 @@ async function ClaimsDataGridWrapper({ searchParams }: DashboardPageProps) {
             <h1 className="text-4xl font-bold text-blue-900">
               Dashboard
             </h1>
-            <p className="text-lg text-blue-700 mt-2">
+            {/* <p className="text-lg text-blue-700 mt-2">
               Medical Claims Management
-            </p>
+            </p> */}
           </div>
 
           <MedicalClaimsGridWrapper 

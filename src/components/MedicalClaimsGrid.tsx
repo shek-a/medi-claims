@@ -269,13 +269,13 @@ export default function MedicalClaimsGrid({
         </div>
 
         {/* Additional Info */}
-        {totalCount > 200 && (
+        {/* {totalCount > 200 && (
           <div className="px-6 py-4 border-t border-gray-200 bg-blue-50">
             <p className="text-sm text-blue-700">
               Note: Results are limited to 200 records per page for performance. Use filters to narrow down your search.
             </p>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

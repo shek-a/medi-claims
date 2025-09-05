@@ -13,6 +13,7 @@ jest.mock('next/navigation', () => ({
     return new URLSearchParams()
   },
   usePathname: jest.fn(() => '/'),
+  redirect: jest.fn(),
 }))
 
 // Mock Next.js Image component
@@ -46,6 +47,11 @@ jest.mock('@clerk/nextjs', () => ({
   SignInButton: ({ children }) => <div data-testid="sign-in-button">{children}</div>,
   SignUpButton: ({ children }) => <div data-testid="sign-up-button">{children}</div>,
   UserButton: () => <div data-testid="user-button" />,
+}))
+
+// Mock Clerk server
+jest.mock('@clerk/nextjs/server', () => ({
+  auth: jest.fn(),
 }))
 
 // Mock mongodb driver for unit tests that import mongodb.ts

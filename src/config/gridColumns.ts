@@ -23,13 +23,13 @@ export const columnDefinitions: ColDef[] = [
     headerName: 'Claim Type',
     field: 'claim_type',
     width: 120,
-    pinned: 'left',
+    // pinned: 'left',
   },
   {
     headerName: 'Status',
     field: 'claim_status',
     width: 100,
-    pinned: 'left',
+    // pinned: 'left',
     cellStyle: (params) => {
       if (params.value === 'Paid') {
         return { backgroundColor: '#dcfce7', color: '#166534' };
@@ -54,7 +54,7 @@ export const columnDefinitions: ColDef[] = [
     field: 'claim',
     width: 120,
     type: 'numericColumn',
-    pinned: 'left',
+    // pinned: 'left',
   },
   {
     headerName: 'Member Number',
