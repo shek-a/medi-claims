@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { ClaimsFilters, SortOption, MedicalClaim } from '@/types/claims'
 import { listClaims } from '@/lib/database/claims.repo'
-import MedicalClaimsGridWrapper from '@/components/MedicalClaimsGridWrapper'
+import MedicalClaimsGridWrapper from '@/components/claims-grid/MedicalClaimsGridWrapper'
 
 interface DashboardPageProps {
   searchParams: Promise<{

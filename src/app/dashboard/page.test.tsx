@@ -11,7 +11,7 @@ import type { MedicalClaim, ClaimsFilters, SortOption } from '@/types/claims';
 jest.mock('@clerk/nextjs/server');
 jest.mock('next/navigation');
 jest.mock('@/lib/database/claims.repo');
-jest.mock('@/components/MedicalClaimsGridWrapper', () => {
+jest.mock('@/components/claims-grid/MedicalClaimsGridWrapper', () => {
   return function MockMedicalClaimsGridWrapper({ 
     initialData, 
     totalCount, 

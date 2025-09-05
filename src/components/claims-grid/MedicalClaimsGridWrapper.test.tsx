@@ -26,6 +26,7 @@ jest.mock('./MedicalClaimsGrid', () => {
     currentPage,
     pageSize,
     onPageChange,
+    onPageSizeChange,
     onFiltersChange,
     onSearchChange,
     onSortChange,
@@ -36,6 +37,7 @@ jest.mock('./MedicalClaimsGrid', () => {
     currentPage: number;
     pageSize: number;
     onPageChange: (page: number) => void;
+    onPageSizeChange: (pageSize: number) => void;
     onFiltersChange: (filters: ClaimsFilters) => void;
     onSearchChange: (search: string) => void;
     onSortChange: (sort: SortOption | undefined) => void;
@@ -53,6 +55,13 @@ jest.mock('./MedicalClaimsGrid', () => {
           onClick={() => onPageChange(2)}
         >
           Change Page
+        </button>
+        
+        <button 
+          data-testid="page-size-change-btn" 
+          onClick={() => onPageSizeChange(25)}
+        >
+          Change Page Size
         </button>
         
         <button 
@@ -143,6 +152,8 @@ describe('MedicalClaimsGridWrapper', () => {
     currentPage: 1,
     pageSize: 10,
     totalPages: 3,
+    currentFilters: {},
+    currentSearch: '',
   };
 
   beforeEach(() => {
@@ -224,16 +235,6 @@ describe('MedicalClaimsGridWrapper', () => {
     it('should handle complex filter changes', async () => {
       const user = userEvent.setup();
       render(<MedicalClaimsGridWrapper {...defaultProps} />);
-
-      // Mock a more complex filter change
-      const mockGrid = screen.getByTestId('medical-claims-grid');
-      const complexFilters: ClaimsFilters = {
-        hospital: 'Test Hospital',
-        status: 'Paid',
-        claim: 12345,
-        cost_from: 100,
-        cost_to: 500,
-      };
 
       // Simulate the complex filter change
       const filtersChangeBtn = screen.getByTestId('filters-change-btn');
@@ -390,9 +391,6 @@ describe('MedicalClaimsGridWrapper', () => {
     it('should create stable callback references', () => {
       const { rerender } = render(<MedicalClaimsGridWrapper {...defaultProps} />);
       
-      // Get initial callback references
-      const initialGrid = screen.getByTestId('medical-claims-grid');
-      
       // Re-render with same props
       rerender(<MedicalClaimsGridWrapper {...defaultProps} />);
       
@@ -468,6 +466,46 @@ describe('MedicalClaimsGridWrapper', () => {
 
       expect(mockPush).toHaveBeenCalledTimes(1);
       expect(mockPush).toHaveBeenCalledWith('/dashboard?page=2');
+    });
+  });
+
+  describe('Page Size Change Handling', () => {
+    it('should update URL when page size changes', async () => {
+      const user = userEvent.setup();
+      render(<MedicalClaimsGridWrapper {...defaultProps} />);
+
+      // Simulate calling onPageSizeChange(25)
+      const pageSizeChangeBtn = screen.getByTestId('page-size-change-btn');
+      await user.click(pageSizeChangeBtn);
+
+      expect(mockPush).toHaveBeenCalledWith('/dashboard?limit=25&page=1');
+    });
+
+    it('should reset page to 1 when page size changes', async () => {
+      const user = userEvent.setup();
+      mockSearchParams.set('page', '5');
+      mockSearchParams.set('limit', '50');
+      
+      render(<MedicalClaimsGridWrapper {...defaultProps} />);
+
+      const pageSizeChangeBtn = screen.getByTestId('page-size-change-btn');
+      await user.click(pageSizeChangeBtn);
+
+      expect(mockPush).toHaveBeenCalledWith('/dashboard?page=1&limit=25');
+    });
+
+    it('should preserve other parameters when page size changes', async () => {
+      const user = userEvent.setup();
+      mockSearchParams.set('search', 'patient');
+      mockSearchParams.set('hospital', 'General');
+      mockSearchParams.set('page', '3');
+      
+      render(<MedicalClaimsGridWrapper {...defaultProps} />);
+
+      const pageSizeChangeBtn = screen.getByTestId('page-size-change-btn');
+      await user.click(pageSizeChangeBtn);
+
+      expect(mockPush).toHaveBeenCalledWith('/dashboard?search=patient&hospital=General&page=1&limit=25');
     });
   });
 

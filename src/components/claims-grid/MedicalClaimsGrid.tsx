@@ -21,6 +21,7 @@ interface MedicalClaimsGridProps {
   currentFilters: ClaimsFilters;
   currentSearch: string;
   onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
   onFiltersChange: (filters: ClaimsFilters) => void;
   onSearchChange: (search: string) => void;
   onSortChange: (sort: SortOption | undefined) => void;
@@ -37,6 +38,7 @@ export default function MedicalClaimsGrid({
   currentFilters,
   currentSearch,
   onPageChange,
+  onPageSizeChange,
   onFiltersChange,
   onSearchChange,
   onSortChange,
@@ -52,6 +54,11 @@ export default function MedicalClaimsGrid({
   useEffect(() => {
     setSearchTerm(currentSearch);
   }, [currentSearch]);
+
+  // Update local pageSizeSelection when pageSize prop changes (from URL navigation)
+  useEffect(() => {
+    setPageSizeSelection(pageSize);
+  }, [pageSize]);
 
   // Debounced search - only trigger when searchTerm actually changes from user input
   useEffect(() => {
@@ -100,8 +107,8 @@ export default function MedicalClaimsGrid({
 
   const handlePageSizeChange = useCallback((newPageSize: number) => {
     setPageSizeSelection(newPageSize);
-    onPageChange(1); // Reset to first page when changing page size
-  }, [onPageChange]);
+    onPageSizeChange(newPageSize); // Call the callback to update URL (already resets to page 1)
+  }, [onPageSizeChange]);
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
@@ -249,7 +256,7 @@ export default function MedicalClaimsGrid({
             <button
               onClick={() => onPageChange(1)}
               disabled={currentPage === 1 || loading}
-              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-100 disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               First
             </button>
@@ -257,7 +264,7 @@ export default function MedicalClaimsGrid({
             <button
               onClick={() => onPageChange(currentPage - 1)}
               disabled={currentPage === 1 || loading}
-              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-100 disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               Previous
             </button>
@@ -269,7 +276,7 @@ export default function MedicalClaimsGrid({
             <button
               onClick={() => onPageChange(currentPage + 1)}
               disabled={currentPage === totalPages || loading}
-              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-100 disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               Next
             </button>
@@ -277,7 +284,7 @@ export default function MedicalClaimsGrid({
             <button
               onClick={() => onPageChange(totalPages)}
               disabled={currentPage === totalPages || loading}
-              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-100 disabled:bg-gray-100 disabled:cursor-not-allowed"
             >
               Last
             </button>

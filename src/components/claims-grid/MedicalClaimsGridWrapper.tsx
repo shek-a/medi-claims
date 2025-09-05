@@ -27,30 +27,27 @@ export default function MedicalClaimsGridWrapper({
   const searchParams = useSearchParams();
 
   const updateURL = useCallback((params: Record<string, string | number | undefined>) => {
-    console.log('🔥 Wrapper: updateURL called with params:', params);
     const newSearchParams = new URLSearchParams(searchParams.toString());
-    console.log('🔥 Wrapper: Starting searchParams:', newSearchParams.toString());
     
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
-        console.log(`🔥 Wrapper: Setting ${key} = ${value}`);
         newSearchParams.set(key, String(value));
       } else {
-        console.log(`🔥 Wrapper: Deleting ${key}`);
         newSearchParams.delete(key);
       }
     });
 
     const newUrl = `/dashboard?${newSearchParams.toString()}`;
-    console.log('🔥 Wrapper: Final URL:', newUrl);
     router.push(newUrl);
   }, [router, searchParams]);
 
   const handlePageChange = useCallback((page: number) => {
-    console.log('🔥 Wrapper: handlePageChange called with page:', page);
-    console.log('🔥 Wrapper: Current searchParams:', searchParams.toString());
     updateURL({ page });
-  }, [updateURL, searchParams]);
+  }, [updateURL]);
+
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    updateURL({ limit: newPageSize, page: 1 }); // Reset to page 1 when changing page size
+  }, [updateURL]);
 
   const handleFiltersChange = useCallback((filters: ClaimsFilters) => {
     // Check if filters actually changed
@@ -102,6 +99,7 @@ export default function MedicalClaimsGridWrapper({
       currentFilters={currentFilters}
       currentSearch={currentSearch}
       onPageChange={handlePageChange}
+      onPageSizeChange={handlePageSizeChange}
       onFiltersChange={handleFiltersChange}
       onSearchChange={handleSearchChange}
       onSortChange={handleSortChange}
