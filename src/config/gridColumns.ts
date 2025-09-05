@@ -94,18 +94,21 @@ export const columnDefinitions: ColDef[] = [
     width: 130,
     valueFormatter: dateFormatter,
     sort: 'desc',
+    sortable: true,
   },
   {
     headerName: 'Admission Date',
     field: 'admission_date',
     width: 140,
     valueFormatter: dateFormatter,
+    sortable: true,
   },
   {
     headerName: 'Discharge Date',
     field: 'discharge_date',
     width: 140,
     valueFormatter: dateFormatter,
+    sortable: true,
   },
   {
     headerName: 'Service',

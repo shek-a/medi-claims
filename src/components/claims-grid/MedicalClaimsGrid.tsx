@@ -113,8 +113,8 @@ export default function MedicalClaimsGrid({
   const totalPages = Math.ceil(totalCount / pageSize);
 
   const defaultColDef = useMemo(() => ({
-    sortable: true,
-    filter: true,
+    sortable: false,
+    filter: false,
     resizable: true,
     minWidth: 100,
     suppressMovable: true,
