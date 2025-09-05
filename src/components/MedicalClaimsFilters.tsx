@@ -1,21 +1,43 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { ClaimsFilters } from '@/types/claims';
 
 interface MedicalClaimsFiltersProps {
   onFiltersChange: (filters: ClaimsFilters) => void;
+  initialFilters?: ClaimsFilters;
   loading?: boolean;
 }
 
-export default function MedicalClaimsFilters({ onFiltersChange, loading = false }: MedicalClaimsFiltersProps) {
-  const [filters, setFilters] = useState<ClaimsFilters>({});
+export default function MedicalClaimsFilters({ onFiltersChange, initialFilters = {}, loading = false }: MedicalClaimsFiltersProps) {
+  const [filters, setFilters] = useState<ClaimsFilters>(initialFilters);
+  const initialFiltersRef = useRef<string>(JSON.stringify(initialFilters));
 
-  const updateFilter = useCallback((key: keyof ClaimsFilters, value: string | number | Date | undefined) => {
+  // Check if initialFilters changed and update state if needed
+  const currentInitialFiltersStr = JSON.stringify(initialFilters);
+  if (currentInitialFiltersStr !== initialFiltersRef.current) {
+    initialFiltersRef.current = currentInitialFiltersStr;
+    // Only update if the filters actually changed
+    if (JSON.stringify(filters) !== currentInitialFiltersStr) {
+      setFilters(initialFilters);
+    }
+  }
+
+    const updateFilter = (key: keyof ClaimsFilters, value: string | number | undefined) => {
+    console.log(`🔥 Filters: updateFilter called with ${key} = ${value}`);
     const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFiltersChange(newFilters);
-  }, [filters, onFiltersChange]);
+    console.log('🔥 Filters: Current filters:', filters);
+    console.log('🔥 Filters: New filters:', newFilters);
+    
+    // Compare with current filters before updating state
+    if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
+      console.log('🔥 Filters: Filters changed, calling onFiltersChange');
+      setFilters(newFilters);
+      onFiltersChange(newFilters);
+    } else {
+      console.log('🔥 Filters: No change in filters');
+    }
+  };
 
   const clearFilters = useCallback(() => {
     setFilters({});

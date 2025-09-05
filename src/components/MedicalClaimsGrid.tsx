@@ -18,6 +18,8 @@ interface MedicalClaimsGridProps {
   totalCount: number;
   currentPage: number;
   pageSize: number;
+  currentFilters: ClaimsFilters;
+  currentSearch: string;
   onPageChange: (page: number) => void;
   onFiltersChange: (filters: ClaimsFilters) => void;
   onSearchChange: (search: string) => void;
@@ -32,6 +34,8 @@ export default function MedicalClaimsGrid({
   totalCount,
   currentPage,
   pageSize,
+  currentFilters,
+  currentSearch,
   onPageChange,
   onFiltersChange,
   onSearchChange,
@@ -40,18 +44,29 @@ export default function MedicalClaimsGrid({
   loading = false,
   error = null,
 }: MedicalClaimsGridProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState(currentSearch);
   const [gridApi, setGridApi] = useState<GridApi | null>(null);
   const [pageSizeSelection, setPageSizeSelection] = useState(pageSize);
 
-  // Debounced search
+  // Update local searchTerm when currentSearch prop changes (from URL navigation)
   useEffect(() => {
+    setSearchTerm(currentSearch);
+  }, [currentSearch]);
+
+  // Debounced search - only trigger when searchTerm actually changes from user input
+  useEffect(() => {
+    // Don't trigger search if searchTerm is same as currentSearch (initial or prop update)
+    if (searchTerm === currentSearch) {
+      return;
+    }
+
     const timeoutId = setTimeout(() => {
+      console.log('🔍 Grid: Debounced search triggering with term:', searchTerm);
       onSearchChange(searchTerm);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, onSearchChange]);
+  }, [searchTerm, onSearchChange, currentSearch]);
 
   const onGridReady = useCallback((params: GridReadyEvent) => {
     setGridApi(params.api);
@@ -163,6 +178,7 @@ export default function MedicalClaimsGrid({
       {/* Filters */}
       <MedicalClaimsFilters 
         onFiltersChange={onFiltersChange}
+        initialFilters={currentFilters}
         loading={loading}
       />
 

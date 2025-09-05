@@ -76,6 +76,8 @@ async function ClaimsDataGridWrapper({ searchParams }: DashboardPageProps) {
             currentPage={result.page}
             pageSize={result.limit}
             totalPages={result.totalPages}
+            currentFilters={filters}
+            currentSearch={globalSearch}
           />
         </div>
       </div>

@@ -103,7 +103,7 @@ describe('DashboardPage', () => {
     jest.clearAllMocks();
     
     // Default successful auth
-    mockAuth.mockResolvedValue({ userId: 'user123' } as any);
+    mockAuth.mockResolvedValue({ userId: 'user123' } as unknown as Awaited<ReturnType<typeof auth>>);
     
     // Mock redirect to throw an error to test redirect behavior
     const mockRedirectError = new Error('NEXT_REDIRECT');
@@ -123,7 +123,7 @@ describe('DashboardPage', () => {
 
   describe('Authentication', () => {
     it('should redirect to home if user is not authenticated', async () => {
-      mockAuth.mockResolvedValue({ userId: null } as any);
+      mockAuth.mockResolvedValue({ userId: null } as unknown as Awaited<ReturnType<typeof auth>>);
       
       const searchParamsPromise = Promise.resolve(mockSearchParams);
       
