@@ -54,9 +54,17 @@ Create a `.env.local` file with:
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 CLERK_SECRET_KEY=your_clerk_secret_key
 
-# MongoDB
-MONGODB_URI=your_mongodb_connection_string
-MONGODB_DB_NAME=your_database_name
+# MongoDB Configuration
+MONGODB_HOST=your_mongodb_host
+MONGODB_DATABASE=your_database_name
+MONGODB_COLLECTION=your_collection_name
+
+# MongoDB User Credentials
+MONGODB_USER=your_mongodb_username
+MONGODB_SECRET=your_mongodb_password
+
+# Next.js Environment
+NODE_ENV=development
 ```
 
 ### Running the Application
