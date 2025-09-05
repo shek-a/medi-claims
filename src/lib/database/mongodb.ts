@@ -13,7 +13,7 @@ const uri = `mongodb+srv://${username}:${password}@${host}/?retryWrites=true&w=m
 export async function getDb(): Promise<Db> {
   if (db) return db;
   if (!username || !password || !host) {
-    throw new Error('MONGO_DB_USER, MONGO_DB_SECRET, and MONGO_HOST environment variables are required');
+    throw new Error('MONGODB_USER, MONGODB_SECRET, and MONGODB_HOST environment variables are required');
   }
   client = new MongoClient(uri, { maxPoolSize: 10 });
   await client.connect();

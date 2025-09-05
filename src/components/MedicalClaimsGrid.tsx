@@ -193,6 +193,7 @@ export default function MedicalClaimsGrid({
             columnDefs={columnDefinitions}
             onGridReady={onGridReady}
             onSortChanged={onSortChanged}
+            theme="legacy"
             pagination={false}
             defaultColDef={defaultColDef}
             loadingOverlayComponent="Loading claims..."
