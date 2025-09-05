@@ -1,9 +1,15 @@
 'use client';
 
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export default function WelcomePage() {
   const { user } = useUser();
+  const router = useRouter();
+
+  const handleViewDashboard = () => {
+    router.push('/dashboard');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
@@ -20,12 +26,15 @@ export default function WelcomePage() {
               Quick Actions
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+              <button
+                onClick={handleViewDashboard}
+                className="p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
                 <h3 className="font-medium text-blue-900">View Dashboard</h3>
                 <p className="text-sm text-gray-600">
                   Access claims overview and analytics
                 </p>
-              </div>
+              </button>
               <div className="p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
                 <h3 className="font-medium text-blue-900">Pending Claims</h3>
                 <p className="text-sm text-gray-600">
