@@ -28,7 +28,7 @@ export default function WelcomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 onClick={handleViewDashboard}
-                className="p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors text-left focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <h3 className="font-medium text-blue-900">View Dashboard</h3>
                 <p className="text-sm text-gray-600">

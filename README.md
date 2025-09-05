@@ -103,11 +103,8 @@ npm run test:watch
 
 ```
 src/
-├── app/                    # Next.js App Router pages
-│   ├── dashboard/         # Claims dashboard page
-│   ├── sign-in/          # Authentication pages
-│   └── sign-up/
-├── components/            # React components
+├── app/                  # Next.js App Router pages
+├── components/           # React components
 │   ├── claims-grid/      # Claims-related components
 │   │   ├── MedicalClaimsGrid.tsx
 │   │   ├── MedicalClaimsGridWrapper.tsx
