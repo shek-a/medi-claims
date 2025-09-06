@@ -68,7 +68,6 @@ export default function MedicalClaimsGrid({
     }
 
     const timeoutId = setTimeout(() => {
-      console.log('🔍 Grid: Debounced search triggering with term:', searchTerm);
       onSearchChange(searchTerm);
     }, 300);
 

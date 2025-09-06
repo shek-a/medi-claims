@@ -24,18 +24,12 @@ export default function MedicalClaimsFilters({ onFiltersChange, initialFilters =
   }
 
     const updateFilter = (key: keyof ClaimsFilters, value: string | number | undefined) => {
-    console.log(`🔥 Filters: updateFilter called with ${key} = ${value}`);
     const newFilters = { ...filters, [key]: value };
-    console.log('🔥 Filters: Current filters:', filters);
-    console.log('🔥 Filters: New filters:', newFilters);
     
     // Compare with current filters before updating state
     if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
-      console.log('🔥 Filters: Filters changed, calling onFiltersChange');
       setFilters(newFilters);
       onFiltersChange(newFilters);
-    } else {
-      console.log('🔥 Filters: No change in filters');
     }
   };
 
