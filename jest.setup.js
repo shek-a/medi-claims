@@ -13,6 +13,7 @@ jest.mock('next/navigation', () => ({
     return new URLSearchParams()
   },
   usePathname: jest.fn(() => '/'),
+  redirect: jest.fn(),
 }))
 
 // Mock Next.js Image component
@@ -47,3 +48,28 @@ jest.mock('@clerk/nextjs', () => ({
   SignUpButton: ({ children }) => <div data-testid="sign-up-button">{children}</div>,
   UserButton: () => <div data-testid="user-button" />,
 }))
+
+// Mock Clerk server
+jest.mock('@clerk/nextjs/server', () => ({
+  auth: jest.fn(),
+}))
+
+// Mock mongodb driver for unit tests that import mongodb.ts
+jest.mock('mongodb', () => {
+  const mockCollection = {
+    aggregate: jest.fn(() => ({ toArray: jest.fn(async () => []) })),
+    countDocuments: jest.fn(async () => 0),
+    distinct: jest.fn(async () => []),
+  };
+  const mockDb = {
+    collection: jest.fn(() => mockCollection),
+  };
+  const mockClient = {
+    connect: jest.fn(async () => mockClient),
+    db: jest.fn(() => mockDb),
+    close: jest.fn(async () => undefined),
+  };
+  return {
+    MongoClient: jest.fn(() => mockClient),
+  };
+}, { virtual: true })

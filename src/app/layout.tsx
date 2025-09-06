@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MediClaims - Medical Claims Management",
+  title: "MediClaims - Medical Insurance Claims Management",
   description: "Professional medical claims management application",
 };
 
